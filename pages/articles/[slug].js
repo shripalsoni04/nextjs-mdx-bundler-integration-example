@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import styled from 'styled-components';
 import path from 'path';
-import matter from "gray-matter";
-import { bundleMDX } from 'mdx-bundler';
+import remarkGfm from 'remark-gfm';
+import { bundleMDXFile } from 'mdx-bundler';
 import { getMDXComponent } from "mdx-bundler/client";
 import { useMemo } from 'react';
 
@@ -41,14 +41,21 @@ export function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const { slug } = params;
   const articlePath = path.join(ARTICLES_PATH, `${slug}.mdx`);
-  const fileContent = fs.readFileSync(articlePath);
-  const { data, content } = matter(fileContent.toString());
-  const { code } = await bundleMDX(content);
+  const config = {
+    xdmOptions(options) {
+      options.remarkPlugins = [
+        ...(options.remarkPlugins ?? []),
+        remarkGfm,
+      ];
+      return options;
+    }
+  };
+
+  const { code, frontmatter } = await bundleMDXFile(articlePath, config);
 
   return {
     props: {
-      frontMatter: data,
-      content,
+      frontMatter: frontmatter,
       code
     }
   }
