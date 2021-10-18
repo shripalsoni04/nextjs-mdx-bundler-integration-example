@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import styled from 'styled-components';
 import path from 'path';
 import remarkGfm from 'remark-gfm';
+import rehypeHighlight from "rehype-highlight";
 import { bundleMDXFile } from 'mdx-bundler';
 import { getMDXComponent } from "mdx-bundler/client";
 import { useMemo } from 'react';
@@ -46,6 +47,10 @@ export async function getStaticProps({ params }) {
       options.remarkPlugins = [
         ...(options.remarkPlugins ?? []),
         remarkGfm,
+      ];
+      options.rehypePlugins = [
+        ...(options.rehypePlugins ?? []),
+        rehypeHighlight,
       ];
       return options;
     }

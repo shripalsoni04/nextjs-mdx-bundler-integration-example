@@ -1,4 +1,5 @@
 import { createGlobalStyle } from "styled-components";
+import 'highlight.js/styles/atom-one-dark.css';
 
 const GlobalStyles = createGlobalStyle`
   html,
