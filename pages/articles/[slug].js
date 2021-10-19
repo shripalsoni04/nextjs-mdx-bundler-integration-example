@@ -6,8 +6,15 @@ import rehypeHighlight from "rehype-highlight";
 import { bundleMDXFile } from 'mdx-bundler';
 import { getMDXComponent } from "mdx-bundler/client";
 import { useMemo } from 'react';
+import Paragraph from '../../components/Paragraph';
+import Table from '../../components/Table';
 
 const ARTICLES_PATH = path.join(process.cwd(), 'content', 'articles');
+
+const contentComponents = {
+  p: Paragraph,
+  table: Table
+};
 
 export default function ArticlePage({ frontMatter, code }) {
   // From performance perspective, it is better to create new MDXComponent only if `code` is changed. So, wrapping it in `useMemo` hook. 
@@ -19,7 +26,7 @@ export default function ArticlePage({ frontMatter, code }) {
     <Wrapper>
       <h1>{frontMatter.title}</h1>
       <main>
-        <MDXComponent />
+        <MDXComponent components={contentComponents}/>
       </main>
     </Wrapper>
   );
