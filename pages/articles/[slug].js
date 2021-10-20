@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import path from 'path';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from "rehype-highlight";
+import memoizeOne from 'memoize-one';
 import { bundleMDXFile } from 'mdx-bundler';
 import { getMDXComponent } from "mdx-bundler/client";
-import { useMemo } from 'react';
 import Paragraph from '../../components/Paragraph';
 import Table from '../../components/Table';
 
@@ -16,11 +16,13 @@ const contentComponents = {
   table: Table
 };
 
+const memoizedGetMDXComponent = memoizeOne((code, globals) => {
+  return getMDXComponent(code, globals);
+});
+
 export default function ArticlePage({ frontMatter, code }) {
-  // From performance perspective, it is better to create new MDXComponent only if `code` is changed. So, wrapping it in `useMemo` hook. 
-  const MDXComponent = useMemo(() => {
-    return getMDXComponent(code);
-  }, [code]);
+  // From performance perspective, it is better to create new MDXComponent only when code gets changed. So using memoize-one package.
+  const MDXComponent = memoizedGetMDXComponent(code, { styled });
 
   return (
     <Wrapper>
@@ -50,6 +52,9 @@ export async function getStaticProps({ params }) {
   const { slug } = params;
   const articlePath = path.join(ARTICLES_PATH, `${slug}.mdx`);
   const config = {
+    globals: {
+      'styled-components': 'styled'
+    },
     xdmOptions(options) {
       options.remarkPlugins = [
         ...(options.remarkPlugins ?? []),
@@ -59,6 +64,14 @@ export async function getStaticProps({ params }) {
         ...(options.rehypePlugins ?? []),
         rehypeHighlight,
       ];
+      return options;
+    },
+    esbuildOptions(options) {
+      options.loader = {
+        ...options.loader,
+        '.js': 'jsx'
+      }
+
       return options;
     }
   };
